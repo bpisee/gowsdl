@@ -6,6 +6,7 @@ package soap
 
 import (
 	"encoding/xml"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -21,8 +22,14 @@ const (
 
 // XSDDateTime is a type for representing xsd:datetime in Golang
 type XSDDateTime struct {
-	innerTime time.Time
-	hasTz     bool
+	innerTime  time.Time
+	hasTz      bool
+	isUnixTime bool
+}
+
+// UnixDateTimeOn - Support Unix time(the number of seconds elapsed)
+func (xdt *XSDDateTime) UnixDateTimeOn(f bool) {
+	xdt.isUnixTime = f
 }
 
 // StripTz removes TZ information from the datetime
@@ -64,6 +71,10 @@ func (xdt XSDDateTime) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 // returns string representation and skips "zero" time values. It also checks if nanoseconds and TZ exist.
 func (xdt XSDDateTime) string() string {
 	if !xdt.innerTime.IsZero() {
+		// Support Unix time - the number of seconds elapsed
+		if xdt.isUnixTime {
+			return strconv.FormatInt(xdt.innerTime.Unix(), 10)
+		}
 		dateTimeLayout := time.RFC3339Nano
 		if xdt.innerTime.Nanosecond() == 0 {
 			dateTimeLayout = time.RFC3339

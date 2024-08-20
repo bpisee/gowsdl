@@ -437,6 +437,24 @@ func TestXsdDateTime(t *testing.T) {
 		}
 	}
 
+	// test marshalling of XsdDateTime as Unix time
+	{
+		testDateTime := TestDateTime{
+			Datetime: CreateXsdDateTime(time.Date(2024, time.August, 19, 20, 18, 50, 0, time.UTC), false),
+		}
+		testDateTime.Datetime.UnixDateTimeOn(true)
+
+		if output, err := xml.MarshalIndent(testDateTime, "", ""); err != nil {
+			t.Error(err)
+		} else {
+			outputstr := string(output)
+			expected := "<TestDateTime><Datetime>1724098730</Datetime></TestDateTime>"
+			if outputstr != expected {
+				t.Errorf("Got:      %v\nExpected: %v", outputstr, expected)
+			}
+		}
+	}
+
 	// test marshalling as attribute
 	{
 		testDateTime := TestAttrDateTime{
